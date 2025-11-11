@@ -1,14 +1,25 @@
 package it.unibo.mvc;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+// CHECKSTYLE: <ruleName> OFF
+//import javax.swing.border.Border;
+//CHECKSTYLE: <ruleName> ON
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
+
+// CHECKSTYLE: <ruleName> OFF
+//import javax.swing.Box;
+// CHECKSTYLE: <ruleName> ON
+
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 /**
  * This class is a simple application that writes a random number on a file.
@@ -29,10 +40,16 @@ public class MiniGUI {
      * Creates a new {@link MiniGUI}.
      */
     public MiniGUI() {
+        final JPanel mypanel = new JPanel();
+        final BoxLayout layout = new BoxLayout(mypanel, BoxLayout.X_AXIS);
+        mypanel.setLayout(layout);
         final JPanel canvas = new JPanel();
         canvas.setLayout(new BorderLayout());
         final JButton write = new JButton("Print a random number on standard output");
-        canvas.add(write, BorderLayout.CENTER);
+        mypanel.add(write);
+        canvas.add(mypanel, BorderLayout.CENTER);
+        final JTextField mytext = new JTextField("Result");
+        canvas.add(mytext, BorderLayout.NORTH);
         frame.setContentPane(canvas);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         /*
@@ -41,7 +58,9 @@ public class MiniGUI {
         write.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                System.out.println(randomGenerator.nextInt());
+                final int randomnum = randomGenerator.nextInt();
+                mytext.setText(Integer.toString(randomnum));
+                System.out.println(randomGenerator.nextInt()); // NOPMD
             }
         });
     }
