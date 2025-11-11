@@ -60,7 +60,7 @@ public class MiniGUI {
             public void actionPerformed(final ActionEvent e) {
                 final int randomnum = randomGenerator.nextInt();
                 mytext.setText(Integer.toString(randomnum));
-                System.out.println(randomGenerator.nextInt()); // NOPMD
+                System.out.println(randomnum); // NOPMD
             }
         });
     }
