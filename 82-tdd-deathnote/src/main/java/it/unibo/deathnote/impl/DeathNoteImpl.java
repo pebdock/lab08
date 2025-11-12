@@ -1,6 +1,8 @@
 package it.unibo.deathnote.impl;
 
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 import it.unibo.deathnote.api.DeathNote;
 
@@ -11,7 +13,13 @@ import it.unibo.deathnote.api.DeathNote;
  */
 public class DeathNoteImpl implements DeathNote {
 
-    private ArrayList<String> names = new ArrayList<>(); // NOPMD
+    private static final double MAXMILLS = 40.0;
+    private static final double MAXMILLS2 = 6040.0;
+    // CHECKSTYLE:OFF
+    // Using an hashmap to save names and death(cause and details)
+    private Map<String, Death> names = new TreeMap<>(); // NOPMD
+    // CHECKSTYLE:0N
+    private double timePassed;
 
     /**
      * Returns the rule with the given number.
@@ -38,15 +46,9 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public void writeName(final String name) {
-        try {
-            if(name == null) {
-                throw new NullPointerException();
-            } else {
-                names.add(name);
-            }
-        } catch (final NullPointerException) {
-            throw new NullPointerException(e);
-        }
+        Objects.requireNonNull(name);
+        names.put(name, new Death());
+        timePassed = System.currentTimeMillis();
     }
 
     /**
@@ -60,8 +62,17 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public boolean writeDeathCause(final String cause) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'writeDeathCause'");
+        try {
+                Objects.requireNonNull(cause);
+                if ((System.currentTimeMillis() - timePassed) < MAXMILLS) {
+                    timePassed = System.currentTimeMillis();
+                    return true;
+                } else {
+                    return false;
+                }
+        } catch (final NullPointerException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
@@ -75,8 +86,22 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public boolean writeDetails(final String details) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'writeDetails'");
+        try {
+                Objects.requireNonNull(details);
+                String registeredName = null;
+                for (final String laststring : names.keySet()) {
+                    registeredName = laststring;
+                }
+                names.get(registeredName).setDetails(details);
+                if ((System.currentTimeMillis() - timePassed) < MAXMILLS2) {
+                    timePassed = System.currentTimeMillis();
+                    return true;
+                } else {
+                    return false;
+                }
+        } catch (final NullPointerException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
@@ -117,5 +142,26 @@ public class DeathNoteImpl implements DeathNote {
     public boolean isNameWritten(final String name) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'isNameWritten'");
+    }
+
+    static class Death {
+        private String cause;
+        private String details;
+
+        public void setCause(final String cause) {
+            this.cause = cause;
+        }
+
+        public void setDetails(final String details) {
+            this.details = details;
+        }
+
+        public String getCause() {
+            return cause;
+        }
+
+        public String getDetails() {
+            return details;
+        }
     }
 }
