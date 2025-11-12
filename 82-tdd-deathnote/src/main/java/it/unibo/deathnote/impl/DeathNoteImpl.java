@@ -1,6 +1,6 @@
 package it.unibo.deathnote.impl;
 
-import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
 
@@ -17,7 +17,7 @@ public class DeathNoteImpl implements DeathNote {
     private static final double MAXMILLS2 = 6040.0;
     // CHECKSTYLE:OFF
     // Using an hashmap to save names and death(cause and details)
-    private Map<String, Death> names = new TreeMap<>(); // NOPMD
+    private final NavigableMap<String, Death> names = new TreeMap<>();
     // CHECKSTYLE:0N
     private double timePassed;
 
@@ -46,9 +46,12 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public void writeName(final String name) {
-        Objects.requireNonNull(name);
-        names.put(name, new Death());
-        timePassed = System.currentTimeMillis();
+        if (name == null) {
+            throw new NullPointerException("The name given is null");
+        } else {
+            names.put(name, new Death());
+            timePassed = System.currentTimeMillis();
+        }
     }
 
     /**
@@ -62,16 +65,18 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public boolean writeDeathCause(final String cause) {
-        try {
-                Objects.requireNonNull(cause);
-                if ((System.currentTimeMillis() - timePassed) < MAXMILLS) {
-                    timePassed = System.currentTimeMillis();
-                    return true;
-                } else {
-                    return false;
-                }
-        } catch (final NullPointerException e) {
-            throw new IllegalStateException(e);
+        if (cause == null) {
+            throw new IllegalStateException("The details are null");
+        } else if (names.isEmpty()) {
+            throw new IllegalStateException("Death Note is empty");
+        } else {
+            names.get(names.lastKey()).setDetails(cause);
+            if ((System.currentTimeMillis() - timePassed) < MAXMILLS) {
+                timePassed = System.currentTimeMillis();
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -86,21 +91,13 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public boolean writeDetails(final String details) {
-        try {
-                Objects.requireNonNull(details);
-                String registeredName = null;
-                for (final String laststring : names.keySet()) {
-                    registeredName = laststring;
-                }
-                names.get(registeredName).setDetails(details);
-                if ((System.currentTimeMillis() - timePassed) < MAXMILLS2) {
-                    timePassed = System.currentTimeMillis();
-                    return true;
-                } else {
-                    return false;
-                }
-        } catch (final NullPointerException e) {
-            throw new IllegalStateException(e);
+        if (details == null) {
+            throw new IllegalStateException("The details are null");
+        } else if (names.isEmpty()) {
+            throw new IllegalStateException("Death Note is empty");
+        } else {
+            names.get(names.lastKey()).setDetails(details);
+            return (System.currentTimeMillis() - timePassed) < MAXMILLS2;
         }
     }
 
@@ -114,8 +111,13 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public String getDeathCause(final String name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDeathCause'");
+        if (!names.containsKey(name)) {
+            throw new IllegalArgumentException("Name not found");
+        } else if (names.get(name) == null || names.get(name).getCause().isEmpty()) {
+            return "heart attack";
+        } else {
+            return names.get(name).getCause();
+        }
     }
 
     /**
@@ -128,8 +130,11 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public String getDeathDetails(final String name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getDeathDetails'");
+        if (isNameWritten(name)) {
+            return names.get(name).getDetails();
+        } else {
+            throw new IllegalArgumentException("The name is not written in the death note");
+        }
     }
 
     /**
@@ -140,8 +145,7 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public boolean isNameWritten(final String name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isNameWritten'");
+        return names.containsKey(name);
     }
 
     static class Death {
