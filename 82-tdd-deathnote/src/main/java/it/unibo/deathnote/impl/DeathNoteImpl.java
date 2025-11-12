@@ -13,13 +13,13 @@ import it.unibo.deathnote.api.DeathNote;
  */
 public class DeathNoteImpl implements DeathNote {
 
-    private static final double MAXMILLS = 40.0;
-    private static final double MAXMILLS2 = 6040.0;
+    private static final long MAXMILLS = 40;
+    private static final long MAXMILLS2 = 6040;
     // CHECKSTYLE:OFF
     // Using an hashmap to save names and death(cause and details)
     private final NavigableMap<String, Death> names = new TreeMap<>();
     // CHECKSTYLE:0N
-    private double timePassed;
+    private long timePassed;
 
     /**
      * Returns the rule with the given number.
@@ -47,8 +47,12 @@ public class DeathNoteImpl implements DeathNote {
     @Override
     public void writeName(final String name) {
         Objects.requireNonNull(name, "The name is not valid");
-        names.put(name, new Death());
-        timePassed = System.currentTimeMillis();
+        if (!name.isEmpty()) {
+            names.put(name, new Death());
+            timePassed = System.currentTimeMillis();
+            writeDeathCause("heart attack");
+            writeDetails("");
+        }
     }
 
     /**
@@ -67,8 +71,8 @@ public class DeathNoteImpl implements DeathNote {
         } else if (names.isEmpty()) {
             throw new IllegalStateException("Death Note is empty");
         } else {
-            names.get(names.lastKey()).setDetails(cause);
             if ((System.currentTimeMillis() - timePassed) < MAXMILLS) {
+                names.get(names.lastKey()).setCause(cause);
                 timePassed = System.currentTimeMillis();
                 return true;
             } else {
@@ -93,8 +97,13 @@ public class DeathNoteImpl implements DeathNote {
         } else if (names.isEmpty()) {
             throw new IllegalStateException("Death Note is empty");
         } else {
-            names.get(names.lastKey()).setDetails(details);
-            return (System.currentTimeMillis() - timePassed) < MAXMILLS2;
+            if ((System.currentTimeMillis() - timePassed) < MAXMILLS2) {
+                names.get(names.lastKey()).setDetails(details);
+                timePassed = System.currentTimeMillis();
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
@@ -110,8 +119,6 @@ public class DeathNoteImpl implements DeathNote {
     public String getDeathCause(final String name) {
         if (!names.containsKey(name)) {
             throw new IllegalArgumentException("Name not found");
-        } else if (names.get(name) == null || names.get(name).getCause().isEmpty()) {
-            return "heart attack";
         } else {
             return names.get(name).getCause();
         }
@@ -128,7 +135,11 @@ public class DeathNoteImpl implements DeathNote {
     @Override
     public String getDeathDetails(final String name) {
         if (isNameWritten(name)) {
-            return names.get(name).getDetails();
+            if (names.get(name).getDetails() == null) {
+                return "";
+            } else {
+                return names.get(name).getDetails();
+            }
         } else {
             throw new IllegalArgumentException("The name is not written in the death note");
         }
