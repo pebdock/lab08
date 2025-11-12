@@ -46,12 +46,9 @@ public class DeathNoteImpl implements DeathNote {
      */
     @Override
     public void writeName(final String name) {
-        if (name == null) {
-            throw new NullPointerException("The name given is null");
-        } else {
-            names.put(name, new Death());
-            timePassed = System.currentTimeMillis();
-        }
+        Objects.requireNonNull(name, "The name is not valid");
+        names.put(name, new Death());
+        timePassed = System.currentTimeMillis();
     }
 
     /**
