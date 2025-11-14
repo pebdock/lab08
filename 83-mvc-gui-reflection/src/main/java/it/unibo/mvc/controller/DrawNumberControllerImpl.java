@@ -3,9 +3,13 @@ package it.unibo.mvc.controller;
 import it.unibo.mvc.api.DrawNumber;
 import it.unibo.mvc.api.DrawNumberController;
 import it.unibo.mvc.api.DrawNumberView;
+import it.unibo.mvc.api.DrawResult;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * This class implements the game controller. It orchestrates the game, exposes methods to its observers
@@ -14,7 +18,7 @@ import java.util.Objects;
 public final class DrawNumberControllerImpl implements DrawNumberController {
 
     private final DrawNumber model;
-    private ArrayList<DrawNumberView> views = new ArrayList<>();
+    private final List<DrawNumberView> views = new ArrayList<>();
 
     /**
      * Builds a new game controller provided a game model.
@@ -22,7 +26,7 @@ public final class DrawNumberControllerImpl implements DrawNumberController {
      * @param model the implementation of the game model
      */
     public DrawNumberControllerImpl(final DrawNumber model) {
-        this.model = model;
+        this.model = Objects.requireNonNull(model, "Model cannot be null");
     }
 
     @Override
@@ -35,7 +39,7 @@ public final class DrawNumberControllerImpl implements DrawNumberController {
 
     @Override
     public void newAttempt(final int n) {
-        final var result = model.attempt(n);
+        final DrawResult result = model.attempt(n);
         for (final DrawNumberView viewIndex : views) {
             viewIndex.result(result);
         }
@@ -46,6 +50,7 @@ public final class DrawNumberControllerImpl implements DrawNumberController {
         this.model.reset();
     }
 
+    @SuppressFBWarnings
     @Override
     public void quit() {
         /*
@@ -53,8 +58,8 @@ public final class DrawNumberControllerImpl implements DrawNumberController {
          * natural termination when closing is hit. To do things more cleanly, attention
          * should be paid to alive threads, as the application would continue to persist
          * until the last thread terminates.
+         * 
          */
         System.exit(0);
     }
-
 }
